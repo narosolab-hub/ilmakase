@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const analysisResult = await generateAnalysis(
       records.map(r => ({
         date: r.date,
-        content: r.content,
+        contents: r.contents,
       }))
     )
 

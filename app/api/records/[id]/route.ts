@@ -54,18 +54,18 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { content } = body
+    const { contents } = body
 
-    if (!content || content.trim().length < 10) {
+    if (!contents || !Array.isArray(contents) || contents.length === 0) {
       return NextResponse.json(
-        { error: '최소 10자 이상 입력해주세요' },
+        { error: '업무 내용을 입력해주세요' },
         { status: 400 }
       )
     }
 
     const { data: record, error } = await supabase
       .from('records')
-      .update({ content: content.trim() })
+      .update({ contents: contents.filter(c => c.trim()).map(c => c.trim()) })
       .eq('id', id)
       .eq('user_id', user.id)
       .select()

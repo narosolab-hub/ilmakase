@@ -1,65 +1,113 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/Button'
+
+export default function LandingPage() {
+  const [showSplash, setShowSplash] = useState(true)
+  const [showLanding, setShowLanding] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    // 2초 후 스플래시 종료
+    setTimeout(() => {
+      setShowSplash(false)
+      setTimeout(() => {
+        setShowLanding(true)
+      }, 600)
+    }, 2000)
+  }, [])
+
+  const handleStart = () => {
+    router.push('/onboarding')
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      {/* 스플래시 화면 */}
+      {showSplash && (
+        <div className={`fixed inset-0 z-50 bg-primary-500 flex flex-col items-center justify-center text-white px-6 text-center ${!showSplash ? 'opacity-0 invisible' : ''} transition-opacity duration-600`}>
+          <div className="text-5xl mb-5 animate-bounce">🍊</div>
+          <h1 className="text-3xl font-bold tracking-tight mb-3">일마카세 아카이브</h1>
+          <div className="w-10 h-0.5 bg-white/50 mb-3 rounded-full"></div>
+          <p className="text-sm font-medium text-white/90 leading-relaxed tracking-wide">
+            오늘 한 일이<br />내일의 포트폴리오가 됩니다
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      )}
+
+      {/* 랜딩 화면 */}
+      {showLanding && (
+        <div className="flex flex-col justify-between p-6 min-h-screen animate-slide-up">
+          <div className="h-8"></div>
+          
+          <div className="text-center flex-1 flex flex-col justify-center">
+            {/* 애니메이션 아이콘 영역 */}
+            <div className="relative h-48 flex items-center justify-center mb-8">
+              <div className="absolute w-40 h-40 bg-orange-100 rounded-full blur-2xl opacity-60 animate-pulse-slow"></div>
+              <div className="relative z-10 flex items-center gap-3 animate-float">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="bg-white p-3 rounded-2xl shadow-md border border-gray-100 transform -rotate-6">
+                    <span className="text-2xl">📝</span>
+                  </div>
+                  <span className="text-xs text-gray-400 font-bold">기록</span>
+                </div>
+                <i className="fas fa-chevron-right text-gray-300 text-sm"></i>
+                <div className="flex flex-col items-center gap-2 mt-8">
+                  <div className="bg-primary-500 p-3 rounded-2xl shadow-lg border border-primary-400 transform rotate-3 text-white">
+                    <i className="fas fa-magic text-xl"></i>
+                  </div>
+                  <span className="text-xs text-primary-600 font-bold">AI 정리</span>
+                </div>
+                <i className="fas fa-chevron-right text-gray-300 text-sm"></i>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="bg-white p-3 rounded-2xl shadow-lg border border-yellow-100 transform rotate-6">
+                    <span className="text-2xl">💼</span>
+                  </div>
+                  <span className="text-xs text-gray-400 font-bold">자산</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-[28px] font-bold text-gray-900 leading-[1.35]">
+                매일의 업무 기록이<br />
+                <span className="text-primary-500 decoration-4 decoration-primary-200 underline-offset-4 underline">
+                  커리어 자산
+                </span>
+                이 되는 곳
+              </h1>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                더 이상 고민하지 마세요.<br />
+                오늘의 업무 기록을 <strong>근사한 포트폴리오</strong>로<br />
+                만들어 드릴게요.
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-8 w-full">
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleStart}
+              className="mb-4"
+            >
+              <i className="fas fa-envelope"></i> 이메일로 3초 만에 시작하기
+            </Button>
+            <p className="text-center text-xs text-gray-400">
+              이미 계정이 있으신가요?{' '}
+              <span 
+                className="underline cursor-pointer hover:text-gray-600"
+                onClick={() => router.push('/login')}
+              >
+                로그인
+              </span>
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+      )}
+    </>
+  )
 }

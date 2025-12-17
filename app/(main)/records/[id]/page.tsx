@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import type { Record } from '@/types'
+import type { Record, AIPreviewResponse } from '@/types'
 
 interface RecordDetailPageProps {
   params: Promise<{ id: string }>
@@ -84,6 +84,22 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
     return `${year}년 ${month}월 ${day}일 (${weekday})`
   }
 
+  const isToday = (dateStr: string) => {
+    // 로컬 타임존 기준으로 오늘 날짜 계산
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayStr = `${year}-${month}-${day}`
+    
+    // record.date도 YYYY-MM-DD 형식이므로 직접 비교
+    return dateStr === todayStr
+  }
+
+  const handleEdit = () => {
+    router.push(`/records/${recordId}/edit`)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white">
@@ -99,6 +115,9 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
     return null
   }
 
+  const aiPreviewItems =
+    (record.ai_preview as AIPreviewResponse | null)?.items || []
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
@@ -112,12 +131,22 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
           </button>
           <h1 className="text-lg font-bold text-gray-800">기록 상세</h1>
         </div>
-        <button
-          onClick={handleDelete}
-          className="text-red-500 hover:text-red-700 text-sm px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
-        >
-          <i className="fas fa-trash mr-1"></i> 삭제
-        </button>
+        <div className="flex items-center gap-2">
+          {isToday(record.date) && (
+            <button
+              onClick={handleEdit}
+              className="text-primary-600 hover:text-primary-700 text-sm px-3 py-1 rounded-lg hover:bg-primary-50 transition-colors font-medium"
+            >
+              <i className="fas fa-pencil-alt mr-1"></i> 수정
+            </button>
+          )}
+          <button
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700 text-sm px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
+          >
+            <i className="fas fa-trash mr-1"></i> 삭제
+          </button>
+        </div>
       </header>
 
       {/* Content */}
@@ -133,24 +162,66 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
           )}
         </div>
 
-        {/* 업무 항목들 */}
+        {/* 업무 항목들 (각각 AI 분석 포함) */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
             <i className="fas fa-list text-primary-500"></i>
             오늘의 업무 ({record.contents.length}개)
           </h3>
-          {record.contents.map((item, index) => (
-            <Card key={index} className="bg-white">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xs font-bold">
-                  {index + 1}
-                </div>
-                <p className="flex-1 text-sm text-gray-700 leading-relaxed pt-0.5">
-                  {item}
-                </p>
+          {record.contents.map((item, index) => {
+            const aiItem = aiPreviewItems[index] ?? null
+
+            return (
+              <div key={index} className="space-y-2">
+                {/* 업무 내용 */}
+                <Card className="bg-white">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </div>
+                    <p className="flex-1 text-sm text-gray-700 leading-relaxed pt-0.5">
+                      {item}
+                    </p>
+                  </div>
+                </Card>
+
+                {/* AI 분석 (아코디언) */}
+                {aiItem && (
+                  <details className="group bg-green-50 rounded-lg border border-green-100 overflow-hidden">
+                    <summary className="flex justify-between items-center px-4 py-3 cursor-pointer list-none text-green-700 font-medium text-sm select-none hover:bg-green-100/50 transition-colors">
+                      <span className="flex items-center gap-2">
+                        🤖 AI 분석 - 업무 한줄평
+                      </span>
+                      <i className="fas fa-chevron-down transition-transform group-open:rotate-180 text-green-600"></i>
+                    </summary>
+                    <div className="px-4 pb-5 pt-3 text-sm text-gray-700 bg-white border-t border-green-100">
+                      <div className="space-y-4">
+                        {/* 업무 한줄평 */}
+                        <div className="py-1">
+                          <h4 className="text-xs font-bold text-green-700 flex items-center gap-1 mb-2">
+                            <i className="far fa-lightbulb"></i> 업무 한줄평
+                          </h4>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {aiItem.skill}
+                          </p>
+                        </div>
+
+                        {/* 포트폴리오 표현 */}
+                        <div className="pt-4 pb-1 border-t border-green-100">
+                          <h4 className="text-xs font-bold text-green-700 flex items-center gap-1 mb-2">
+                            <i className="far fa-clipboard"></i> 포트폴리오 표현
+                          </h4>
+                          <p className="text-sm text-gray-800 font-medium">
+                            "{aiItem.portfolioTerm}"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                )}
               </div>
-            </Card>
-          ))}
+            )
+          })}
         </div>
 
         {/* 키워드 (있는 경우) */}
@@ -176,7 +247,7 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
         {/* V1.0 기능 안내 (향후 추가 예정) */}
         <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-100">
           <div className="flex items-start gap-3">
-            <div className="text-2xl">💡</div>
+            <div className="text-xl">💡</div>
             <div className="flex-1 text-sm">
               <p className="font-bold text-amber-900 mb-1">곧 출시!</p>
               <p className="text-amber-700 text-xs">

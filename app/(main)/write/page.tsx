@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
@@ -46,6 +46,7 @@ interface WorkItem {
 
 export default function WritePage() {
   const router = useRouter()
+  const nextIdRef = useRef(4) // 초기 ID는 4부터 시작 (1,2,3은 이미 사용 중)
   const [workItems, setWorkItems] = useState<WorkItem[]>([
     { id: '1', content: '' },
     { id: '2', content: '' },
@@ -65,12 +66,27 @@ export default function WritePage() {
   useEffect(() => {
     const checkTodayRecord = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0]
+        // 로컬 타임존 기준으로 오늘 날짜 계산
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        const today = `${year}-${month}-${day}`
+        
         const response = await fetch(`/api/records?date=${today}`)
         const data = await response.json()
         
         if (data.records && data.records.length > 0) {
-          if (confirm('오늘은 이미 업무 일지를 작성했습니다.\n홈으로 돌아가시겠어요?')) {
+          const todayRecord = data.records[0]
+          
+          // 사용자에게 확인 요청
+          const userConfirmed = confirm(
+            '오늘은 이미 업무 기록을 했어요 😊\n\n더 작성하고 싶다면 수정하러 갈까요?'
+          )
+          
+          if (userConfirmed) {
+            router.push(`/records/${todayRecord.id}/edit`)
+          } else {
             router.push('/home')
           }
         }
@@ -87,7 +103,8 @@ export default function WritePage() {
       alert('업무는 최대 10개까지 추가할 수 있습니다.')
       return
     }
-    const newId = String(workItems.length + 1)
+    const newId = String(nextIdRef.current)
+    nextIdRef.current += 1 // 다음 ID 증가
     setWorkItems([...workItems, { id: newId, content: '' }])
   }
 
@@ -128,6 +145,13 @@ export default function WritePage() {
 
     setLoading(true)
     try {
+      // 로컬 타임존 기준 오늘 날짜
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const today = `${year}-${month}-${day}`
+
       // API 호출로 기록 저장 + AI 미리보기
       const response = await fetch('/api/records', {
         method: 'POST',
@@ -136,7 +160,7 @@ export default function WritePage() {
         },
         body: JSON.stringify({
           contents: filledItems.map((item) => item.content.trim()),
-          date: new Date().toISOString().split('T')[0],
+          date: today,
         }),
       })
 

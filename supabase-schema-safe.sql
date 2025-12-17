@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS project_cards (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Records 테이블 (핵심 변경: contents 배열)
+-- Records 테이블 (핵심 변경: contents 배열 + ai_preview)
 CREATE TABLE IF NOT EXISTS records (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS records (
   
   -- AI 추출 정보
   keywords TEXT[],
+  ai_preview JSONB,  -- 추가: AI 즉시 미리보기 (items: [{original, skill, portfolioTerm}])
   project_id UUID REFERENCES project_cards(id) ON DELETE SET NULL,
   
   -- 하루 1회 작성 제한을 위한 유니크 제약
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS ai_analyses (
 -- Indexes (성능 최적화)
 CREATE INDEX IF NOT EXISTS idx_records_user_date ON records(user_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_records_user_project ON records(user_id, project_id);
+CREATE INDEX IF NOT EXISTS idx_records_ai_preview ON records USING GIN (ai_preview);
 CREATE INDEX IF NOT EXISTS idx_ai_analyses_user ON ai_analyses(user_id);
 CREATE INDEX IF NOT EXISTS idx_project_cards_user ON project_cards(user_id, created_at DESC);
 

@@ -22,6 +22,7 @@ export interface Record {
   created_at: string
   keywords?: string[]
   project_id?: string
+  ai_preview?: AIPreviewResponse | null  // AI 분석 결과
 }
 
 export interface AIAnalysis {
@@ -50,10 +51,14 @@ export interface ProjectCard {
 }
 
 // AI 응답 타입
+export interface AIPreviewItem {
+  original: string           // 원본 업무 내용
+  skill: string              // 어떤 능력을 발휘했는지 (2-3줄)
+  portfolioTerm: string      // 포트폴리오 표현
+}
+
 export interface AIPreviewResponse {
-  title: string
-  actions: string[]
-  thinking: string
+  items: AIPreviewItem[]
 }
 
 export interface AIAnalysisResponse {

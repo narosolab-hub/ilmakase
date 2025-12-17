@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { generateInstantPreview } from '@/lib/gemini/prompts'
 
 // 기록 상세 조회
 export async function GET(
@@ -63,9 +64,51 @@ export async function PUT(
       )
     }
 
+    // 기존 기록 조회
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('records')
+      .select('date')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (fetchError || !existingRecord) {
+      return NextResponse.json(
+        { error: '기록을 찾을 수 없습니다' },
+        { status: 404 }
+      )
+    }
+
+    // 오늘 날짜인지 확인 (로컬 타임존 기준)
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}`
+    
+    if (existingRecord.date !== today) {
+      return NextResponse.json(
+        { error: '오늘 작성한 기록만 수정할 수 있어요' },
+        { status: 403 }
+      )
+    }
+
+    // AI 재분석 실행
+    const cleanedContents = contents.filter(c => c.trim()).map(c => c.trim())
+    let preview = null
+    try {
+      preview = await generateInstantPreview(cleanedContents)
+    } catch (aiError) {
+      console.error('AI 분석 실패:', aiError)
+    }
+
+    // 수정 실행 (contents + ai_preview)
     const { data: record, error } = await supabase
       .from('records')
-      .update({ contents: contents.filter(c => c.trim()).map(c => c.trim()) })
+      .update({ 
+        contents: cleanedContents,
+        ai_preview: preview as any,
+      })
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
@@ -73,11 +116,11 @@ export async function PUT(
 
     if (error) throw error
 
-    return NextResponse.json({ record })
+    return NextResponse.json({ record, preview })
   } catch (error: any) {
     console.error('기록 수정 에러:', error)
     return NextResponse.json(
-      { error: '기록 수정에 실패했습니다' },
+      { error: error.message || '기록 수정에 실패했습니다' },
       { status: 500 }
     )
   }

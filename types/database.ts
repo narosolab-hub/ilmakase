@@ -55,6 +55,7 @@ export interface Database {
           // AI 추출 정보
           keywords: string[] | null
           project_id: string | null
+          ai_preview: Json | null  // AI 분석 결과 (AIPreviewResponse)
         }
         Insert: {
           id?: string
@@ -64,6 +65,7 @@ export interface Database {
           created_at?: string
           keywords?: string[] | null
           project_id?: string | null
+          ai_preview?: Json | null
         }
         Update: {
           id?: string
@@ -73,6 +75,7 @@ export interface Database {
           created_at?: string
           keywords?: string[] | null
           project_id?: string | null
+          ai_preview?: Json | null
         }
       }
       ai_analyses: {

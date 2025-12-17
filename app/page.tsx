@@ -3,13 +3,48 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LandingPage() {
   const [showSplash, setShowSplash] = useState(true)
   const [showLanding, setShowLanding] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
+    checkAuthStatus()
+  }, [])
+
+  const checkAuthStatus = async () => {
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        setIsLoggedIn(true)
+        
+        // 온보딩 완료 여부 확인
+        const { data: userData } = await supabase
+          .from('users')
+          .select('situation')
+          .eq('id', user.id)
+          .single()
+
+        if (userData?.situation) {
+          setIsOnboardingComplete(true)
+        }
+      }
+    } catch (error) {
+      console.error('인증 상태 확인 실패:', error)
+    } finally {
+      setIsLoading(false)
+      showSplashScreen()
+    }
+  }
+
+  const showSplashScreen = () => {
     // 2초 후 스플래시 종료
     setTimeout(() => {
       setShowSplash(false)
@@ -17,10 +52,20 @@ export default function LandingPage() {
         setShowLanding(true)
       }, 600)
     }, 2000)
-  }, [])
+  }
 
   const handleStart = () => {
-    router.push('/onboarding')
+    if (isLoggedIn) {
+      // 로그인 O: 온보딩 완료 여부에 따라 분기
+      if (isOnboardingComplete) {
+        router.push('/home')
+      } else {
+        router.push('/onboarding')
+      }
+    } else {
+      // 로그인 X: 회원가입으로
+      router.push('/signup')
+    }
   }
 
   return (
@@ -93,18 +138,29 @@ export default function LandingPage() {
               fullWidth
               onClick={handleStart}
               className="mb-4"
+              disabled={isLoading}
             >
-              <i className="fas fa-envelope"></i> 이메일로 3초 만에 시작하기
+              {isLoggedIn ? (
+                <>
+                  <i className="fas fa-pencil-alt"></i> 기록하러 가기
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-envelope"></i> 이메일로 3초 만에 시작하기
+                </>
+              )}
             </Button>
-            <p className="text-center text-xs text-gray-400">
-              이미 계정이 있으신가요?{' '}
-              <span 
-                className="underline cursor-pointer hover:text-gray-600"
-                onClick={() => router.push('/login')}
-              >
-                로그인
-              </span>
-            </p>
+            {!isLoggedIn && (
+              <p className="text-center text-xs text-gray-400">
+                이미 계정이 있으신가요?{' '}
+                <span 
+                  className="underline cursor-pointer hover:text-gray-600"
+                  onClick={() => router.push('/login')}
+                >
+                  로그인
+                </span>
+              </p>
+            )}
           </div>
         </div>
       )}

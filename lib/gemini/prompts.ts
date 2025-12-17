@@ -3,27 +3,39 @@ import type { AIPreviewResponse, AIAnalysisResponse, AICardResponse } from '@/ty
 
 /**
  * 프롬프트 1: 즉시 미리보기 (기록 1개)
- * 사용자의 업무 일지(항목들)를 포트폴리오 언어로 변환
+ * 각 업무별로 능력 분석 + 포트폴리오 표현 제안
  */
 export async function generateInstantPreview(contents: string[]): Promise<AIPreviewResponse> {
-  const systemPrompt = `당신은 포트폴리오 작성 전문가입니다. 
-사용자의 업무 일지(여러 항목)를 분석하여 포트폴리오에 바로 쓸 수 있는 형태로 정리해주세요.
-특히 "무엇을 했는지"와 "어떻게 생각했는지"를 명확하게 구분하여 표현해주세요.`
+  const systemPrompt = `당신은 친근하고 전문적인 포트폴리오 코치입니다.
+사용자의 캐주얼한 업무 기록을 보고, 각 업무에서 어떤 능력을 발휘했는지 분석하고, 포트폴리오에는 어떻게 표현하면 좋을지 제안해주세요.
+
+<규칙>
+1. 각 업무마다 개별 분석
+2. skill: 어떤 능력을 발휘했는지 구체적으로 2-3줄로 설명 (고등학생도 이해할 수 있는 쉬운 말로)
+3. portfolioTerm: 포트폴리오에 쓸 수 있는 전문적인 표현 (6-10단어)
+4. 어려운 단어 사용 금지 (예: 스코핑, 벤치마킹 등)
+</규칙>`
 
   const contentsText = contents
     .map((item, i) => `${i + 1}. ${item}`)
     .join('\n')
 
-  const prompt = `오늘 작성한 업무 일지를 분석하여 포트폴리오 형식으로 변환해주세요:
+  const prompt = `다음 업무 기록들을 각각 분석해주세요:
 
 ${contentsText}
 
 다음 JSON 형식으로 응답해주세요:
 {
-  "title": "한 줄로 요약한 오늘의 업무",
-  "actions": ["내가 한 일 1", "내가 한 일 2", "내가 한 일 3"],
-  "thinking": "이 업무에서 드러난 사고 방식 (예: 데이터 기반으로 의사결정하는 스타일)"
-}`
+  "items": [
+    {
+      "original": "업무 원본 내용 그대로",
+      "skill": "이 업무에서 발휘한 능력을 구체적으로 2-3줄로 설명. 예: 데이터를 분석해서 타겟층을 찾아내고, 이를 이해하기 쉬운 기획서로 만들었어요.",
+      "portfolioTerm": "포트폴리오에 쓸 표현. 예: 타겟 분석 및 기획서 작성"
+    }
+  ]
+}
+
+모든 업무에 대해 위 형식으로 작성해주세요.`
 
   return generateJSON<AIPreviewResponse>(prompt, systemPrompt)
 }

@@ -61,20 +61,6 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleLogin = async () => {
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-      if (error) throw error
-    } catch (error: any) {
-      setError('Google 로그인에 실패했습니다')
-    }
-  }
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-white">
@@ -137,25 +123,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">또는</span>
-          </div>
-        </div>
-
-        <Button
-          variant="secondary"
-          size="lg"
-          fullWidth
-          onClick={handleGoogleLogin}
-        >
-          <i className="fab fa-google"></i> Google로 로그인
-        </Button>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 mt-8">
           아직 계정이 없으신가요?{' '}
           <span
             onClick={() => router.push('/signup')}

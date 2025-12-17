@@ -80,7 +80,15 @@ export async function POST(request: Request) {
       }
     }
 
-    const recordDate = date || new Date().toISOString().split('T')[0]
+    // 로컬 타임존 기준 오늘 날짜
+    let recordDate = date
+    if (!recordDate) {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      recordDate = `${year}-${month}-${day}`
+    }
 
     // 오늘 이미 작성했는지 확인 (하루 1회 제한)
     const { data: existingRecords } = await supabase
@@ -97,27 +105,27 @@ export async function POST(request: Request) {
       )
     }
 
-    // 기록 저장 (contents 배열로 저장)
-    const { data: record, error: recordError } = await supabase
-      .from('records')
-      .insert({
-        user_id: user.id,
-        contents: contents.map((c: string) => c.trim()),
-        date: recordDate,
-      })
-      .select()
-      .single()
-
-    if (recordError) throw recordError
-
     // AI 즉시 미리보기 생성
     let preview = null
     try {
       preview = await generateInstantPreview(contents)
     } catch (aiError) {
       console.error('AI 미리보기 생성 실패:', aiError)
-      // AI 실패해도 기록은 저장되었으므로 계속 진행
     }
+
+    // 기록 저장 (contents + ai_preview)
+    const { data: record, error: recordError } = await supabase
+      .from('records')
+      .insert({
+        user_id: user.id,
+        contents: contents.map((c: string) => c.trim()),
+        date: recordDate,
+        ai_preview: preview as any,
+      })
+      .select()
+      .single()
+
+    if (recordError) throw recordError
 
     return NextResponse.json({
       record,
@@ -126,7 +134,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('기록 작성 에러:', error)
     return NextResponse.json(
-      { error: '기록 저장에 실패했습니다' },
+      { error: error.message || '기록 저장에 실패했습니다' },
       { status: 500 }
     )
   }

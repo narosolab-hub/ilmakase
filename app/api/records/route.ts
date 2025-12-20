@@ -109,8 +109,15 @@ export async function POST(request: Request) {
     let preview = null
     try {
       preview = await generateInstantPreview(contents)
-    } catch (aiError) {
+    } catch (aiError: any) {
       console.error('AI 미리보기 생성 실패:', aiError)
+      console.error('에러 상세:', {
+        message: aiError.message,
+        stack: aiError.stack,
+        contentsCount: contents.length,
+        contentsLength: contents.map(c => c.length).join(', ')
+      })
+      // AI 실패해도 기록은 저장되도록 계속 진행
     }
 
     // 기록 저장 (contents + ai_preview)

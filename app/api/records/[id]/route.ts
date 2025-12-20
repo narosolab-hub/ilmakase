@@ -98,8 +98,15 @@ export async function PUT(
     let preview = null
     try {
       preview = await generateInstantPreview(cleanedContents)
-    } catch (aiError) {
+    } catch (aiError: any) {
       console.error('AI 분석 실패:', aiError)
+      console.error('에러 상세:', {
+        message: aiError.message,
+        stack: aiError.stack,
+        contentsCount: cleanedContents.length,
+        contentsLength: cleanedContents.map(c => c.length).join(', ')
+      })
+      // AI 실패해도 기록은 저장되도록 계속 진행
     }
 
     // 수정 실행 (contents + ai_preview)

@@ -20,7 +20,7 @@ export async function generateInstantPreview(contents: string[]): Promise<AIPrev
     .map((item, i) => `${i + 1}. ${item}`)
     .join('\n')
 
-  const prompt = `다음 업무 기록들을 각각 분석해주세요:
+  const prompt = `다음 업무 기록들을 각각 분석해주세요 (총 ${contents.length}개):
 
 ${contentsText}
 
@@ -35,7 +35,10 @@ ${contentsText}
   ]
 }
 
-모든 업무에 대해 위 형식으로 작성해주세요.`
+중요: 
+- 반드시 모든 업무(${contents.length}개)에 대해 items 배열에 포함해주세요.
+- original 필드는 위에 나온 업무 내용을 정확히 그대로 복사해주세요.
+- JSON 형식만 응답하고 다른 설명은 포함하지 마세요.`
 
   return generateJSON<AIPreviewResponse>(prompt, systemPrompt)
 }

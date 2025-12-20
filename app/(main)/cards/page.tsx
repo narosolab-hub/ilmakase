@@ -119,10 +119,10 @@ export default function CardsPage() {
         </div>
         <button
           onClick={handleLogout}
-          className="text-gray-400 hover:text-gray-600 p-2 transition-colors"
+          className="text-gray-400 hover:text-gray-600 p-1.5 transition-colors"
           title="로그아웃"
         >
-          <i className="fas fa-sign-out-alt text-lg"></i>
+          <i className="fas fa-right-from-bracket text-sm"></i>
         </button>
       </header>
 

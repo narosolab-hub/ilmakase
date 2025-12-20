@@ -68,6 +68,26 @@ export default function LandingPage() {
     }
   }
 
+  const handleLogout = async () => {
+    if (!confirm('로그아웃 하시겠어요?')) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) throw error
+      
+      // 로그아웃 성공 시 상태 업데이트
+      setIsLoggedIn(false)
+      setIsOnboardingComplete(false)
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   return (
     <>
       {/* 스플래시 화면 */}
@@ -84,7 +104,7 @@ export default function LandingPage() {
 
       {/* 랜딩 화면 */}
       {showLanding && (
-        <div className="flex flex-col justify-between p-6 min-h-screen animate-slide-up">
+        <div className="flex flex-col justify-between p-6 h-screen overflow-hidden animate-slide-up">
           <div className="h-8"></div>
           
           <div className="text-center flex-1 flex flex-col justify-center">
@@ -150,6 +170,16 @@ export default function LandingPage() {
                 </>
               )}
             </Button>
+            {isLoggedIn && (
+              <p className="text-center text-xs text-gray-400 mb-3">
+                <span 
+                  className="underline cursor-pointer hover:text-gray-600"
+                  onClick={handleLogout}
+                >
+                  로그아웃
+                </span>
+              </p>
+            )}
             {!isLoggedIn && (
               <>
                 <Button

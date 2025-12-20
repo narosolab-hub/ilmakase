@@ -81,19 +81,19 @@ export default function HomePage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    today.setHours(0, 0, 0, 0)
+    const recordDate = new Date(date)
+    recordDate.setHours(0, 0, 0, 0)
 
-    if (date.toDateString() === today.toDateString()) {
+    if (recordDate.getTime() === today.getTime()) {
       return '오늘'
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return '어제'
     } else {
-      const month = date.getMonth() + 1
-      const day = date.getDate()
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
       const weekdays = ['일', '월', '화', '수', '목', '금', '토']
       const weekday = weekdays[date.getDay()]
-      return `${month}/${day} (${weekday})`
+      return `${year}.${month}.${day}(${weekday})`
     }
   }
 
@@ -141,10 +141,10 @@ export default function HomePage() {
             </div>
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-gray-600 p-2 transition-colors"
+              className="text-gray-400 hover:text-gray-600 p-1.5 transition-colors"
               title="로그아웃"
             >
-              <i className="fas fa-sign-out-alt text-lg"></i>
+              <i className="fas fa-right-from-bracket text-sm"></i>
             </button>
           </div>
         </div>

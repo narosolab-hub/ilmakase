@@ -118,12 +118,12 @@ export default function AnalysisPage() {
           </div>
         </Card>
 
-        <Card className="bg-gray-800 text-white">
+        <Card className="bg-gradient-to-r from-primary-50 to-orange-50 border border-primary-200">
           <div className="flex items-start gap-3">
             <span className="text-2xl">💬</span>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-gray-700">
               기록을 조금 더 쌓으면<br />
-              <strong>완성된 포트폴리오 카드</strong>를 만들어드릴게요!
+              <strong className="text-primary-600">완성된 포트폴리오 카드</strong>를 만들어드릴게요!
             </p>
           </div>
         </Card>

@@ -12,6 +12,7 @@ export default function HomePage() {
   const [cards, setCards] = useState<ProjectCard[]>([])
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState<string>('')
+  const [unusedAnalysesCount, setUnusedAnalysesCount] = useState<number>(0)
 
   useEffect(() => {
     loadData()
@@ -48,6 +49,14 @@ export default function HomePage() {
 
       setRecords(recordsData || [])
 
+      // 패턴 분석 목록 (프로젝트에 연결되지 않은 것만)
+      const { data: analysesData } = await supabase
+        .from('ai_analyses')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('project_id', null)
+        .order('created_at', { ascending: false })
+
       // 포트폴리오 카드 목록
       const { data: cardsData } = await supabase
         .from('project_cards')
@@ -56,6 +65,9 @@ export default function HomePage() {
         .order('created_at', { ascending: false })
 
       setCards(cardsData || [])
+      
+      // 패턴 분석 개수 저장 (상태 관리용)
+      setUnusedAnalysesCount(analysesData?.length || 0)
     } catch (error) {
       console.error('데이터 로딩 실패:', error)
     } finally {
@@ -63,20 +75,23 @@ export default function HomePage() {
     }
   }
 
-  // 미사용 기록 수 계산
-  const unusedRecordsCount = records.filter((r) => !r.project_id).length
+  // 미사용 기록 수 계산 (패턴 분석에 사용되지 않은 기록)
+  const unusedRecordsCount = records.filter((r) => {
+    // analysis_id가 null인 기록만 카운트 (패턴 분석에 사용되지 않은 기록)
+    return !r.analysis_id
+  }).length
 
-  // 다음 카드까지 남은 기록 수
-  const recordsUntilNextCard = 5 - (unusedRecordsCount % 5)
+  // 다음 패턴 분석까지 남은 기록 수
+  const recordsUntilNextAnalysis = 5 - (unusedRecordsCount % 5)
 
-  // 진행률 계산
+  // 진행률 계산 (5일 단위)
   const progressPercent = ((unusedRecordsCount % 5) / 5) * 100
 
-  // AI 분석 가능 여부 (3개 이상)
-  const canAnalyze = unusedRecordsCount >= 3 && unusedRecordsCount < 5
+  // 패턴 분석 가능 여부 (5개 기록)
+  const canAnalyze = unusedRecordsCount >= 5
 
-  // 카드 생성 가능 여부 (5개 이상)
-  const canGenerateCard = unusedRecordsCount >= 5
+  // 포트폴리오 카드 생성 가능 여부 (4개 패턴 분석 = 20일 기록)
+  const canGenerateCard = unusedAnalysesCount >= 4
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -174,8 +189,8 @@ export default function HomePage() {
                 <p className="text-xl font-bold text-primary-600">{cards.length}개</p>
               </div>
               <div className="border-l border-primary-200 pl-4">
-                <p className="text-xs text-gray-500 mb-1">다음 카드 완성까지</p>
-                <p className="text-base font-bold text-gray-700">기록 {recordsUntilNextCard}개 남음</p>
+                <p className="text-xs text-gray-500 mb-1">다음 패턴 분석까지</p>
+                <p className="text-base font-bold text-gray-700">기록 {recordsUntilNextAnalysis}개 남음</p>
               </div>
             </div>
           </div>
@@ -183,8 +198,10 @@ export default function HomePage() {
           {/* 진행 바 */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-gray-500">1일 기록 완료</span>
-              <span className="text-xs font-medium text-primary-600">4일 더 작성하면 카드 생성!</span>
+              <span className="text-xs text-gray-500">{unusedRecordsCount % 5}일 기록 완료</span>
+              <span className="text-xs font-medium text-primary-600">
+                {recordsUntilNextAnalysis}일 더 작성하면 패턴 분석!
+              </span>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
               <div
@@ -206,8 +223,8 @@ export default function HomePage() {
                 🎉
               </div>
               <div className="flex-1">
-                <h3 className="font-bold mb-0.5 text-gray-900">기록 {unusedRecordsCount}개 쌓였어요!</h3>
-                <p className="text-sm text-gray-600">완성 패턴을 분석해봤어요</p>
+                <h3 className="font-bold mb-0.5 text-gray-900">패턴 분석 {unusedAnalysesCount}개 쌓였어요!</h3>
+                <p className="text-sm text-gray-600">포트폴리오 카드를 만들 수 있어요 (총 {unusedAnalysesCount * 5}일 기록)</p>
               </div>
               <i className="fas fa-chevron-right text-gray-400"></i>
             </div>
@@ -216,7 +233,7 @@ export default function HomePage() {
 
         {canAnalyze && !canGenerateCard && (
           <Card
-            className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 cursor-pointer hover:shadow-md transition-all"
+            className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 cursor-pointer hover:shadow-md transition-all"
             onClick={() => router.push('/analysis')}
           >
             <div className="flex items-center gap-3">
@@ -224,8 +241,8 @@ export default function HomePage() {
                 ✨
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-blue-900 mb-0.5">기록 3개 쌓였어요!</h3>
-                <p className="text-sm text-gray-600">패턴을 분석해봤어요</p>
+                <h3 className="font-bold text-blue-900 mb-0.5">기록 5개 쌓였어요!</h3>
+                <p className="text-sm text-gray-600">일주일치 업무 패턴을 분석해봤어요</p>
               </div>
               <i className="fas fa-chevron-right text-gray-400"></i>
             </div>

@@ -19,11 +19,12 @@ CREATE TABLE IF NOT EXISTS users (
   emotional_phrase TEXT
 );
 
--- Project Cards 테이블 (5일 카드) - records보다 먼저 생성!
+-- Project Cards 테이블 (4개 패턴 분석 = 20일 기록) - records보다 먼저 생성!
 CREATE TABLE IF NOT EXISTS project_cards (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  record_ids UUID[] NOT NULL,
+  analysis_ids UUID[] NOT NULL,  -- 4개 패턴 분석 카드 ID
+  record_ids UUID[] NOT NULL,  -- 총 20개 기록 ID
   title TEXT NOT NULL,
   period_start DATE NOT NULL,
   period_end DATE NOT NULL,
@@ -45,21 +46,23 @@ CREATE TABLE IF NOT EXISTS records (
   -- AI 추출 정보
   keywords TEXT[],
   ai_preview JSONB,  -- 추가: AI 즉시 미리보기 (items: [{original, skill, portfolioTerm}])
-  project_id UUID REFERENCES project_cards(id) ON DELETE SET NULL,
+  analysis_id UUID REFERENCES ai_analyses(id) ON DELETE SET NULL,  -- 패턴 분석 연결
+  project_id UUID REFERENCES project_cards(id) ON DELETE SET NULL,  -- 포트폴리오 카드 연결
   
   -- 하루 1회 작성 제한을 위한 유니크 제약
   UNIQUE(user_id, date)
 );
 
--- AI Analyses 테이블 (3일 분석)
+-- AI Analyses 테이블 (5일 기록 → 패턴 분석)
 CREATE TABLE IF NOT EXISTS ai_analyses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  record_ids UUID[] NOT NULL,
+  record_ids UUID[] NOT NULL,  -- 5개 기록 ID
   pattern TEXT NOT NULL,
   workflow TEXT NOT NULL,
   top_keywords TEXT[] NOT NULL,
   insight TEXT NOT NULL,
+  project_id UUID REFERENCES project_cards(id) ON DELETE SET NULL,  -- 포트폴리오 카드 연결
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

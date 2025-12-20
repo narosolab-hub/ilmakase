@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateAnalysis } from '@/lib/gemini/prompts'
 import { NextResponse } from 'next/server'
 
-// AI 분석 실행 (3-5개 기록)
+// AI 분석 실행 (5개 기록 → 패턴 분석 카드)
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
@@ -12,20 +12,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 })
     }
 
-    // 최근 기록 가져오기 (프로젝트에 매핑되지 않은 것만)
+    // 최근 기록 가져오기 (분석에 사용되지 않은 것만, 날짜 오름차순)
     const { data: records, error: recordsError } = await supabase
       .from('records')
       .select('*')
       .eq('user_id', user.id)
-      .is('project_id', null)
-      .order('date', { ascending: false })
+      .is('analysis_id', null)  // 패턴 분석에 사용되지 않은 기록
+      .order('date', { ascending: true })
       .limit(5)
 
     if (recordsError) throw recordsError
 
-    if (!records || records.length < 3) {
+    if (!records || records.length < 5) {
       return NextResponse.json(
-        { error: '분석을 위해 최소 3개의 기록이 필요합니다' },
+        { error: '패턴 분석을 위해 최소 5일의 기록이 필요합니다' },
         { status: 400 }
       )
     }
@@ -54,15 +54,21 @@ export async function POST(request: Request) {
 
     if (analysisError) throw analysisError
 
-    // 기록에 키워드 업데이트
+    // 기록에 키워드 업데이트 및 분석 연결
     for (const record of records) {
       await supabase
         .from('records')
-        .update({ keywords: analysisResult.keywords })
+        .update({ 
+          keywords: analysisResult.keywords,
+          analysis_id: analysis.id
+        })
         .eq('id', record.id)
     }
 
-    return NextResponse.json({ analysis })
+    return NextResponse.json({ 
+      analysis,
+      message: '패턴 분석 카드가 생성되었습니다! 4개가 모이면 포트폴리오 카드를 만들 수 있어요.'
+    })
   } catch (error: any) {
     console.error('AI 분석 에러:', error)
     return NextResponse.json(

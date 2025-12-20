@@ -21,25 +21,28 @@ export interface Record {
   date: string
   created_at: string
   keywords?: string[]
-  project_id?: string
+  analysis_id?: string  // 패턴 분석 연결
+  project_id?: string  // 포트폴리오 카드 연결
   ai_preview?: AIPreviewResponse | null  // AI 분석 결과
 }
 
 export interface AIAnalysis {
   id: string
   user_id: string
-  record_ids: string[]
+  record_ids: string[]  // 5개 기록 ID
   pattern: string
   workflow: string
   top_keywords: string[]
   insight: string
+  project_id?: string  // 포트폴리오 카드 연결
   created_at: string
 }
 
 export interface ProjectCard {
   id: string
   user_id: string
-  record_ids: string[]
+  analysis_ids: string[]  // 4개 패턴 분석 ID
+  record_ids: string[]  // 총 20개 기록 ID
   title: string
   period_start: string
   period_end: string

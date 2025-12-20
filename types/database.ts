@@ -54,7 +54,8 @@ export interface Database {
           created_at: string
           // AI 추출 정보
           keywords: string[] | null
-          project_id: string | null
+          analysis_id: string | null  // 패턴 분석 연결
+          project_id: string | null  // 포트폴리오 카드 연결
           ai_preview: Json | null  // AI 분석 결과 (AIPreviewResponse)
         }
         Insert: {
@@ -64,6 +65,7 @@ export interface Database {
           date?: string
           created_at?: string
           keywords?: string[] | null
+          analysis_id?: string | null
           project_id?: string | null
           ai_preview?: Json | null
         }
@@ -74,6 +76,7 @@ export interface Database {
           date?: string
           created_at?: string
           keywords?: string[] | null
+          analysis_id?: string | null
           project_id?: string | null
           ai_preview?: Json | null
         }

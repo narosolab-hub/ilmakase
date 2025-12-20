@@ -35,10 +35,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // 인증이 필요한 페이지인데 로그인하지 않은 경우
+  // 단, 게스트 체험 경로(/try)는 허용
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/signup') &&
+    !request.nextUrl.pathname.startsWith('/try') &&
     request.nextUrl.pathname !== '/'
   ) {
     const url = request.nextUrl.clone()

@@ -137,7 +137,7 @@ export default function LandingPage() {
               size="lg"
               fullWidth
               onClick={handleStart}
-              className="mb-4"
+              className="mb-3"
               disabled={isLoading}
             >
               {isLoggedIn ? (
@@ -151,15 +151,26 @@ export default function LandingPage() {
               )}
             </Button>
             {!isLoggedIn && (
-              <p className="text-center text-xs text-gray-400">
-                이미 계정이 있으신가요?{' '}
-                <span 
-                  className="underline cursor-pointer hover:text-gray-600"
-                  onClick={() => router.push('/login')}
+              <>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  onClick={() => router.push('/try')}
+                  className="mb-3"
                 >
-                  로그인
-                </span>
-              </p>
+                  <i className="fas fa-play-circle"></i> 로그인 없이 체험하기
+                </Button>
+                <p className="text-center text-xs text-gray-400">
+                  이미 계정이 있으신가요?{' '}
+                  <span 
+                    className="underline cursor-pointer hover:text-gray-600"
+                    onClick={() => router.push('/login')}
+                  >
+                    로그인
+                  </span>
+                </p>
+              </>
             )}
           </div>
         </div>

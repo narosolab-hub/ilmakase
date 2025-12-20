@@ -59,6 +59,24 @@ export default function RecordsListPage() {
     }
   }
 
+  const handleLogout = async () => {
+    if (!confirm('로그아웃 하시겠어요?')) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) throw error
+      
+      router.push('/')
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -74,14 +92,23 @@ export default function RecordsListPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center gap-4">
+        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/home')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <i className="fas fa-arrow-left text-lg"></i>
+            </button>
+            <h1 className="text-lg font-bold text-gray-800">전체 기록</h1>
+          </div>
           <button
-            onClick={() => router.push('/home')}
-            className="text-gray-600 hover:text-gray-900"
+            onClick={handleLogout}
+            className="text-gray-400 hover:text-gray-600 p-2 transition-colors"
+            title="로그아웃"
           >
-            <i className="fas fa-arrow-left text-lg"></i>
+            <i className="fas fa-sign-out-alt text-lg"></i>
           </button>
-          <h1 className="text-lg font-bold text-gray-800">전체 기록</h1>
         </div>
       </header>
 

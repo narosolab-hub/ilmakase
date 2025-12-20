@@ -82,6 +82,24 @@ export default function CardsPage() {
     return `${start.slice(5).replace('-', '.')} ~ ${end.slice(5).replace('-', '.')} (${weeks > 0 ? `${weeks}주` : `${diffDays}일`})`
   }
 
+  const handleLogout = async () => {
+    if (!confirm('로그아웃 하시겠어요?')) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) throw error
+      
+      router.push('/')
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -99,6 +117,13 @@ export default function CardsPage() {
           </button>
           <h1 className="text-lg font-bold text-gray-800">내 포트폴리오 카드</h1>
         </div>
+        <button
+          onClick={handleLogout}
+          className="text-gray-400 hover:text-gray-600 p-2 transition-colors"
+          title="로그아웃"
+        >
+          <i className="fas fa-sign-out-alt text-lg"></i>
+        </button>
       </header>
 
       <div className="p-5">

@@ -97,6 +97,25 @@ export default function HomePage() {
     }
   }
 
+  const handleLogout = async () => {
+    if (!confirm('로그아웃 하시겠어요?')) {
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) throw error
+      
+      // 로그아웃 성공 시 랜딩 페이지로 이동
+      router.push('/')
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -113,10 +132,21 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-md mx-auto px-5 py-4">
-          <h1 className="text-xl font-bold text-gray-900">일마카세 아카이브</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            안녕하세요, {userName}! 👋
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">일마카세 아카이브</h1>
+              <p className="text-sm text-gray-500 mt-1">
+                안녕하세요, {userName}! 👋
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-gray-400 hover:text-gray-600 p-2 transition-colors"
+              title="로그아웃"
+            >
+              <i className="fas fa-sign-out-alt text-lg"></i>
+            </button>
+          </div>
         </div>
       </header>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import type { ProjectCard } from '@/types'
@@ -9,11 +9,14 @@ import type { ProjectCard } from '@/types'
 export default function CardDetailPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const [card, setCard] = useState<ProjectCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [cardId, setCardId] = useState<string>('')
   const [userName, setUserName] = useState<string>('')
   const cardRef = useRef<HTMLDivElement>(null)
+  
+  const fromTab = searchParams.get('fromTab') || 'cards'
 
   useEffect(() => {
     if (params.id) {
@@ -86,7 +89,7 @@ export default function CardDetailPage() {
       {/* Header */}
       <header className="bg-white p-4 flex items-center gap-4 sticky top-0 z-10 border-b border-gray-200">
         <button 
-          onClick={() => router.push('/cards')} 
+          onClick={() => router.push(`/home?tab=${fromTab}`)} 
           className="text-gray-500"
         >
           <i className="fas fa-arrow-left text-lg"></i>

@@ -108,23 +108,13 @@ export default function AnalysisPage() {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-r from-primary-500 to-orange-500 text-white animate-slide-up" style={{ animationDelay: '0.3s' }}>
+        <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-100 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-start gap-3">
-            <span className="text-3xl">💡</span>
+            <span className="text-2xl">💡</span>
             <div>
-              <h3 className="font-bold text-white mb-2">인사이트</h3>
-              <p className="leading-relaxed">{analysis.insight}</p>
+              <h3 className="font-bold text-gray-800 mb-2">인사이트</h3>
+              <p className="text-sm leading-relaxed text-gray-700">{analysis.insight}</p>
             </div>
-          </div>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-primary-50 to-orange-50 border border-primary-200">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">💬</span>
-            <p className="text-sm leading-relaxed text-gray-700">
-              기록을 조금 더 쌓으면<br />
-              <strong className="text-primary-600">완성된 포트폴리오 카드</strong>를 만들어드릴게요!
-            </p>
           </div>
         </Card>
 

@@ -106,7 +106,7 @@ export async function generateProjectCard(records: Array<{ date: string; content
     })
     .join('\n\n')
 
-  const prompt = `다음 5일간의 업무 일지를 분석하여, 하나의 프로젝트로 묶어 포트폴리오 카드를 생성해주세요:
+  const prompt = `다음 ${records.length}일간의 업무 일지를 분석하여, 하나의 프로젝트로 묶어 포트폴리오 카드를 생성해주세요:
 
 ${recordsText}
 

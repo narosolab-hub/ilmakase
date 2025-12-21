@@ -27,7 +27,9 @@ export default function CardGeneratePage() {
       }
     } catch (error: any) {
       console.error('카드 생성 실패:', error)
-      alert(error.message || '카드 생성에 실패했습니다. 다시 시도해주세요.')
+      console.error('에러 상세:', error)
+      const errorMessage = error.message || data?.error || '카드 생성에 실패했습니다. 다시 시도해주세요.'
+      alert(errorMessage)
       router.push('/home')
     } finally {
       setLoading(false)

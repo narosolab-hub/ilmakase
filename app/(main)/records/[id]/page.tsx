@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -13,12 +13,9 @@ interface RecordDetailPageProps {
 
 export default function RecordDetailPage({ params }: RecordDetailPageProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [record, setRecord] = useState<Record | null>(null)
   const [loading, setLoading] = useState(true)
   const [recordId, setRecordId] = useState<string>('')
-  
-  const fromTab = searchParams.get('fromTab') || 'records'
 
   useEffect(() => {
     const init = async () => {
@@ -70,7 +67,7 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
       }
 
       alert('삭제되었습니다.')
-      router.push(`/home?tab=${fromTab}`)
+      router.push('/home')
     } catch (error) {
       console.error('삭제 실패:', error)
       alert('삭제에 실패했습니다. 다시 시도해주세요.')
@@ -127,7 +124,7 @@ export default function RecordDetailPage({ params }: RecordDetailPageProps) {
       <header className="bg-white p-4 flex items-center justify-between border-b border-gray-100">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push(`/home?tab=${fromTab}`)}
+            onClick={() => router.push('/home')}
             className="text-gray-500 p-1"
           >
             <i className="fas fa-arrow-left"></i>

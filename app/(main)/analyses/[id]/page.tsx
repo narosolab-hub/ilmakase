@@ -1,30 +1,26 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import type { AIAnalysis } from '@/types'
 
 interface AnalysisDetailPageProps {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
 export default function AnalysisDetailPage({ params }: AnalysisDetailPageProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const { id } = use(params)
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null)
   const [loading, setLoading] = useState(true)
-  
-  const fromTab = searchParams.get('fromTab') || 'analyses'
 
   useEffect(() => {
     loadAnalysis()
-  }, [id])
+  }, [params.id])
 
   const loadAnalysis = async () => {
     try {
@@ -39,24 +35,16 @@ export default function AnalysisDetailPage({ params }: AnalysisDetailPageProps) 
       const { data, error } = await supabase
         .from('ai_analyses')
         .select('*')
-        .eq('id', id)
+        .eq('id', params.id)
         .eq('user_id', user.id)
         .single()
 
-      if (error) {
-        console.error('패턴 분석 로딩 에러:', error)
-        throw error
-      }
-      
-      if (!data) {
-        throw new Error('패턴 분석을 찾을 수 없습니다')
-      }
-      
+      if (error) throw error
       setAnalysis(data)
-    } catch (error: any) {
+    } catch (error) {
       console.error('패턴 분석 로딩 실패:', error)
-      alert(`패턴 분석을 불러오는데 실패했습니다: ${error.message || '알 수 없는 오류'}`)
-      router.push(`/home?tab=${fromTab}`)
+      alert('패턴 분석을 불러오는데 실패했습니다')
+      router.push('/analyses')
     } finally {
       setLoading(false)
     }
@@ -90,7 +78,7 @@ export default function AnalysisDetailPage({ params }: AnalysisDetailPageProps) 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="p-4 flex items-center gap-3 border-b border-gray-100 bg-white sticky top-0 z-10">
-        <button onClick={() => router.push(`/home?tab=${fromTab}`)} className="text-gray-500 p-1">
+        <button onClick={() => router.push('/analyses')} className="text-gray-500 p-1">
           <i className="fas fa-arrow-left"></i>
         </button>
         <h1 className="text-lg font-bold text-gray-800">패턴 분석 상세</h1>
@@ -152,7 +140,7 @@ export default function AnalysisDetailPage({ params }: AnalysisDetailPageProps) 
           </div>
         </Card>
 
-        <Button variant="primary" size="lg" fullWidth onClick={() => router.push(`/home?tab=${fromTab}`)}>
+        <Button variant="primary" size="lg" fullWidth onClick={() => router.push('/analyses')}>
           목록으로 돌아가기
         </Button>
       </div>

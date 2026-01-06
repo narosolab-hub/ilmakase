@@ -34,35 +34,7 @@ export default function AnalysesListPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-
-      // 패턴 분석의 날짜 범위 계산 (record_ids를 사용해서 실제 기록의 날짜 가져오기)
-      if (data && data.length > 0) {
-        const analysesWithDates = await Promise.all(
-          data.map(async (analysis) => {
-            if (analysis.record_ids && analysis.record_ids.length > 0) {
-              const { data: recordDates } = await supabase
-                .from('records')
-                .select('date')
-                .in('id', analysis.record_ids)
-                .order('date', { ascending: true })
-
-              if (recordDates && recordDates.length > 0) {
-                const dates = recordDates.map(r => new Date(r.date))
-                const minDate = new Date(Math.min(...dates.map(d => d.getTime())))
-                const maxDate = new Date(Math.max(...dates.map(d => d.getTime())))
-                return {
-                  ...analysis,
-                  dateRange: { start: minDate.toISOString(), end: maxDate.toISOString() }
-                }
-              }
-            }
-            return analysis
-          })
-        )
-        setAnalyses(analysesWithDates)
-      } else {
-        setAnalyses([])
-      }
+      setAnalyses(data || [])
     } catch (error) {
       console.error('패턴 분석 로딩 실패:', error)
     } finally {
@@ -127,16 +99,10 @@ export default function AnalysesListPage() {
                   {/* 헤더 */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {(analysis as any).dateRange ? (
-                          <span className="text-xs text-gray-600 bg-blue-50 px-2 py-0.5 rounded font-medium">
-                            {formatDate((analysis as any).dateRange.start)} ~ {formatDate((analysis as any).dateRange.end)}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-500">
-                            {formatDate(analysis.created_at)}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-gray-500">
+                          {formatDate(analysis.created_at)}
+                        </span>
                         {analysis.project_id && (
                           <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs rounded-full">
                             카드 생성됨
